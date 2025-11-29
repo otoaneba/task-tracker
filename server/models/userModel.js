@@ -1,0 +1,48 @@
+import pool from "../config/db.js";
+import { NotFoundError, QueryError } from "../utils/errors.js";
+
+export const UserModel = {
+  findByEmail: async (email) => {
+    try {
+      const sql = "SELECT * FROM users WHERE email = $1"; // $1 = first parameter
+      const params = [email]; // parameters must be an array. If a string is passed in, pg will treat each character as a separate parameter.
+      const result = await pool.query(sql, params);
+      
+      if (result.rows.length === 0) {
+        throw new NotFoundError("User", { email })
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      throw new QueryError("Failed to query user by email", { email, cause: error });
+    }
+  },
+  createUser: async function(username, email, passwordHash) {
+    try {
+      const sql = "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *";
+      const result = await pool.query(sql, [username, email, passwordHash]);
+
+      if (result.rowCount === 0) {
+        throw new QueryError("Failed to create user", { username, email })
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      throw new QueryError("Failed to create user", { username, email, cause: error })
+    }
+  },
+  findById: async function(id) {
+    try {
+    const sql = "SELECT * FROM users WHERE id = $1";
+    const result = await pool.query(sql, [id]);
+
+    if (result.rows.length === 0) {
+      throw new NotFoundError("User", { id });
+    }
+
+    return result.rows[0]
+    } catch (error) {
+      throw new QueryError("Failed to find user by id", { id, cause: error })
+    }
+  }
+}
