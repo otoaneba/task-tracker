@@ -66,3 +66,20 @@ export class ValidationError extends AppError {
     super(message, 400, details);
   }
 }
+
+/*
+ * AlreadyExistsError = an error for when a resource already exists
+ * message = the error message
+ * details = additional information about the error
+ */
+export class AlreadyExistsError extends AppError {
+  constructor(message, details = {}) {
+    super(message, 400, details);
+  }
+}
+
+export class AuthenticationError extends AppError {
+  constructor(message, details = {}) {
+    super(message, 401, details);
+  }
+}
