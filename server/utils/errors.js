@@ -78,8 +78,21 @@ export class AlreadyExistsError extends AppError {
   }
 }
 
+/**
+ * 
+ */
 export class AuthenticationError extends AppError {
   constructor(message, details = {}) {
     super(message, 401, details);
+  }
+}
+
+
+/**
+ * 
+ */
+export class Forbidden extends AppError {
+  constructor(message, details = {}) {
+    super(message, 403, details);
   }
 }

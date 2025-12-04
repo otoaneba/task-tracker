@@ -33,7 +33,7 @@ export const TaskModel = {
   createTask: async function({userId, title, description, imageUrl, status, dueDate}) {
     try {
       const sql = "INSERT INTO tasks (user_id, title, description, image_url, status, due_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *"; // RETURNING * = return the created task
-      const result = await Pool.query(sql, [userId, title, description, imageUrl, status, dueDate]);
+      const result = await pool.query(sql, [userId, title, description, imageUrl, status, dueDate]);
 
       if (result.rows.length === 0) {
         return null;
