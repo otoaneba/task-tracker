@@ -1,10 +1,10 @@
-import pool from "../config/db.js";
 import { TaskModel } from "../models/taskModel.js";
-import { NotFoundError, AuthenticationError, ValidationError, Forbidden, QueryError } from "../utils/errors.js";
+import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
 
 
 export const TaskService = {
   getTasksForUser: async function({userId}) {
+    
     const allTasks = await TaskModel.findAll(userId);
     if (allTasks?.length === 0) {
       return [];
@@ -66,13 +66,17 @@ export const TaskService = {
 
     const result = await TaskModel.createTask({userId, title, description, imageUrl, status, dueDate});
 
+    if (result == null) {
+      throw new QueryError("Error creating task.", { title })
+    }
+
     return result;
   },
   updateTask: async function({taskId, userId, title, description, imageUrl, status, dueDate}) {
     const oldTask = await TaskModel.findTaskById(taskId, userId);
 
     if (oldTask == null) {
-      throw new NotFoundError("Task was not found.", { taskId });
+      throw new NotFoundError("Task", { id: taskId });
     }
 
     const mergedTasks = {
@@ -141,6 +145,10 @@ export const TaskService = {
       dueDate: mergedTasks.dueDate
     })
 
+    if (result == null) {
+      throw new QueryError("Error updating task.", { taskId });
+    }
+
     return result;
 
   },
@@ -149,16 +157,15 @@ export const TaskService = {
     const oldTask = await TaskModel.findTaskById(taskId, userId);
 
     if (oldTask === null) {
-      throw new NotFoundError("Task was not found.", { taskId });
+      throw new NotFoundError("Task", { id: taskId });
     }
 
     const result = await TaskModel.deleteTask({id: taskId, userId: userId});
 
     if (result === null) {
-      throw new NotFoundError("Task was not found", { taskId })
+      throw new NotFoundError("Task", { id: taskId })
     }
 
-    return result
-
+    return true;
   }
 } 

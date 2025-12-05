@@ -6,10 +6,11 @@ export const authMiddleware = async function(req, res, next) {
   try {
 
     const header = req.get("Authorization");
+
     if (header == null || header.trim() === "") { // check if entire authorization header is null or undefined
-      throw new AuthenticationError("Token is invalid.", {  })
+      throw new AuthenticationError("Token is invalid.")
     } else if (!header.startsWith("Bearer ")) { // check if token header starts with Bearer (case sensitive)
-      throw new AuthenticationError("Token is invalid.", {  })
+      throw new AuthenticationError("Token is invalid.")
     }
   
     const headerArr = header.trim().split(" ");

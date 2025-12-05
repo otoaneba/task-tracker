@@ -3,7 +3,7 @@ import { ValidationError, AlreadyExistsError, AuthenticationError } from "../uti
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const UserService = {
+export const UserService = {
   signup: async function({email, password, username}) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -25,7 +25,7 @@ const UserService = {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await UserModel.createUser({email, passwordHash, username});
-    
+
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
     return {
       token,
