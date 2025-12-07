@@ -1,5 +1,4 @@
 import { TaskService } from "../services/taskService";
-import { AuthenticationError } from "../utils/errors";
 
 export const TaskController = {
   getTasksForUser: async function(req, res, next) {

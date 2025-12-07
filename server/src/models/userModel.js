@@ -17,10 +17,10 @@ export const UserModel = {
       throw new QueryError("Failed to query user by email", { email, cause: error });
     }
   },
-  createUser: async function({username, email, passwordHash}) {
+  createUser: async function({email, passwordHash, username}) {
     try {
-      const sql = "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING *"; // RETURNING * = return the created user
-      const result = await pool.query(sql, [username, email, passwordHash]);
+      const sql = "INSERT INTO users (email, password_hash, username) VALUES ($1, $2, $3) RETURNING *"; // RETURNING * = return the created user
+      const result = await pool.query(sql, [email, passwordHash, username]);
 
       if (result.rowCount === 0) {
         return null;

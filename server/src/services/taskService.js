@@ -6,9 +6,6 @@ export const TaskService = {
   getTasksForUser: async function({userId}) {
     
     const allTasks = await TaskModel.findAll(userId);
-    if (allTasks?.length === 0) {
-      return [];
-    }
 
     return allTasks;
   },

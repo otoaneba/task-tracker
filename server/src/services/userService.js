@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 export const UserService = {
   signup: async function({email, password, username}) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!email || !emailRegex.test(email)) {
       throw new ValidationError("Invalid email address");
     }
 
@@ -14,8 +14,9 @@ export const UserService = {
       throw new ValidationError("Password must be at least 8 characters long");
     }
 
-    if (username) {
-      username = username.trim() || null;
+    if (username !== undefined) {
+      username = username.trim()
+      if (username.lengh === 0) username = null;
     }
 
     const emailExists = await UserModel.findByEmail(email);
