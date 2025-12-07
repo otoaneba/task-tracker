@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv/lib/main';
+import dotenv from 'dotenv';
 import { authMiddleware } from './middleware/authMiddleWare';
 import { errorHandler } from './middleware/errorHandler';
 import { taskRoutes } from './routes/taskRoutes';
