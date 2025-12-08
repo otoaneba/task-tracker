@@ -35,12 +35,10 @@ let TaskService;
 
 beforeAll(async () => {
   // Import mocked TaskService
-  const taskServiceModule = await import("../../src/services/taskService.js");
-  TaskService = taskServiceModule.TaskService;
+  TaskService = (await import("../../src/services/taskService.js")).TaskService
 
   // Import the app (which will use mocked authMiddleware)
-  const appModule = await import("../../src/app.js");
-  app = appModule.default;
+  app = (await import("../../src/app.js")).default;
 });
 
 describe("GET /tasks/:taskId", () => {
