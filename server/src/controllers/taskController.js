@@ -1,4 +1,4 @@
-import { TaskService } from "../services/taskService";
+import { TaskService } from "../services/taskService.js";
 
 export const TaskController = {
   getTasksForUser: async function(req, res, next) {

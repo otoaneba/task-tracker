@@ -1,10 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { authMiddleware } from './middleware/authMiddleWare';
-import { errorHandler } from './middleware/errorHandler';
-import { taskRoutes } from './routes/taskRoutes';
-import { userRoutes } from './routes/userRoutes';
+import { authMiddleware } from './middleware/authMiddleWare.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { taskRoutes } from './routes/taskRoutes.js';
+import { userRoutes } from './routes/userRoutes.js';
 
 dotenv.config();
 

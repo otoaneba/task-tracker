@@ -32,6 +32,7 @@ pool.connect()
     client.release();
   })
   .catch(err => {
+    console.log(pool.connectionString);
     console.error("Database connection error:", err.stack);
   });
 

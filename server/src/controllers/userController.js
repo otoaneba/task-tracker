@@ -1,4 +1,4 @@
-import { UserService } from '../services/userService';
+import { UserService } from '../services/userService.js';
 
 export const UserController = {
   signup: async function(req, res, next) {

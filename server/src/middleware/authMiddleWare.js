@@ -1,4 +1,4 @@
-import { AuthenticationError } from "../utils/errors";
+import { AuthenticationError } from "../utils/errors.js";
 import jwt from "jsonwebtoken";
 
 
