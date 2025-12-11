@@ -14,7 +14,7 @@ export function errorHandler(err, req, res, next) {
     });
   }
 
-  // If we reach here → it's a programmer error
+  // If we reach here → it's a developer (my) error
   return res.status(500).json({
     error: "Internal Server Error",
   });

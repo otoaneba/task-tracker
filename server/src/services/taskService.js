@@ -3,9 +3,36 @@ import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
 
 
 export const TaskService = {
-  getTasksForUser: async function({userId}) {
+  getTasksForUser: async function({userId, page, limit}) {
     
-    const allTasks = await TaskModel.findAll(userId);
+    let parsedPage;
+    let parsedLimit;
+
+    if (page === undefined || page === "") { // check if any value was passed. If not, set to default.
+      parsedPage = 1;
+    } else {
+      parsedPage = Number(page);
+      if (Number.isNaN(parsedPage)) { // passes NaN, "banana", 
+        throw new ValidationError("Page must be a number.")
+      } else if (parsedPage < 1) { // passes null, "0", 0, "  "
+        throw new ValidationError("Page must be a positive integer.")
+      }
+    }
+
+    if (limit === undefined || limit === "") {
+      parsedLimit = 10;
+    } else {
+      parsedLimit = Number(limit);
+      if (Number.isNaN(parsedLimit)) {
+        throw new ValidationError("Limit must be a number.");
+      } else if (parsedLimit < 1 || parsedLimit > 10) {
+        throw new ValidationError("Limit must be between 1 and 10.")
+      } 
+    }
+
+    const offset = (parsedPage - 1) * parsedLimit;
+
+    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset});
 
     return allTasks;
   },

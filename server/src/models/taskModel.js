@@ -2,10 +2,27 @@ import pool from "../config/db.js";
 import { QueryError } from "../utils/errors.js";
 
 export const TaskModel = {
-  findAll: async function(userId) {
+  findAll: async function({userId, limit, offset}) {
     try {
-      const sql = "SELECT id, user_id, title, description, image_url, status, due_date, created_at, updated_at FROM tasks WHERE user_id = $1 AND deleted_at IS NULL";
-      const result = await pool.query(sql, [userId]);
+      const sql = `
+        SELECT
+          id,
+          user_id,
+          title,
+          description,
+          image_url,
+          status,
+          due_date,
+          created_at,
+          updated_at
+        FROM tasks
+        WHERE user_id = $1
+          AND deleted_at IS NULL
+        ORDER BY created_at DESC
+        LIMIT $2
+        OFFSET $3
+        `;
+      const result = await pool.query(sql, [userId, limit, offset]);
 
       if (result.rows.length === 0) { 
         return [];
