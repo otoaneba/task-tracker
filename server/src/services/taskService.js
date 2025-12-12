@@ -3,12 +3,12 @@ import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
 
 
 export const TaskService = {
-  getTasksForUser: async function({userId, page, limit}) {
+  getTasksForUser: async function({userId, page, limit, status}) {
     
     let parsedPage;
     let parsedLimit;
 
-    if (page === undefined || page === "") { // check if any value was passed. If not, set to default.
+    if (page === undefined || (typeof page === "string" && page.trim() === "")) { // check if any value was passed. If not, set to default.
       parsedPage = 1;
     } else {
       parsedPage = Number(page);
@@ -19,7 +19,7 @@ export const TaskService = {
       }
     }
 
-    if (limit === undefined || limit === "") {
+    if (limit === undefined || (typeof limit === "string" && limit.trim() === "")) {
       parsedLimit = 10;
     } else {
       parsedLimit = Number(limit);
@@ -32,9 +32,25 @@ export const TaskService = {
 
     const offset = (parsedPage - 1) * parsedLimit;
 
-    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset});
+    if (status === undefined || status === "") {
+      status = null
+    } else {
+      status = status.trim();
+      if (!["todo", "done"].includes(status)) {
+        throw new ValidationError("Status must be either 'todo' or 'done'");
+      }
+    }
+    console.log("status: ", status)
+    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset, status: status});
 
-    return allTasks;
+    const result = {
+      data: [...allTasks],
+      page: parsedPage,
+      limit: parsedLimit,
+      hasMore: allTasks.length === parsedLimit 
+    };
+
+    return result;
   },
   getTaskById: async function({ taskId, userId }) {
     const task = await TaskModel.findTaskById(taskId, userId);

@@ -2,7 +2,7 @@ import pool from "../config/db.js";
 import { QueryError } from "../utils/errors.js";
 
 export const TaskModel = {
-  findAll: async function({userId, limit, offset}) {
+  findAll: async function({userId, limit, offset, status}) {
     try {
       const sql = `
         SELECT
@@ -18,11 +18,13 @@ export const TaskModel = {
         FROM tasks
         WHERE user_id = $1
           AND deleted_at IS NULL
+          AND ($4::text IS NULL OR status = $4::text)
         ORDER BY created_at DESC
         LIMIT $2
         OFFSET $3
         `;
-      const result = await pool.query(sql, [userId, limit, offset]);
+        console.log("status in model: ", status)
+      const result = await pool.query(sql, [userId, limit, offset, status]);
 
       if (result.rows.length === 0) { 
         return [];

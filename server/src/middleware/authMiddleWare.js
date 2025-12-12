@@ -27,6 +27,14 @@ export const authMiddleware = async function(req, res, next) {
 
     next()
   } catch (error) {
-    next(error);
+    if (error.name === "TokenExpiredError") {
+      throw new AuthenticationError("Token expired.");
+    }
+    
+    if (error.name === "JsonWebTokenError") {
+      throw new AuthenticationError("Invalid token.");
+    }
+
+    return next(error);
   }
 }

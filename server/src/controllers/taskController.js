@@ -4,7 +4,7 @@ export const TaskController = {
   getTasksForUser: async function(req, res, next) {
     try {
 
-      const result = await TaskService.getTasksForUser({userId: req.user.id, page: req.query?.page, limit: req.query?.limit});
+      const result = await TaskService.getTasksForUser({userId: req.user.id, page: req.query?.page, limit: req.query?.limit, status: req.query?.status});
 
       return res.status(200).json(result);
     } catch (error) {
