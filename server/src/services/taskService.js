@@ -1,10 +1,10 @@
 import { TaskModel } from "../models/taskModel.js";
 import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
+import SortHelper from "./helpers/sort.js";
 
 
 export const TaskService = {
-  getTasksForUser: async function({userId, page, limit, status}) {
-    
+  getTasksForUser: async function({userId, page, limit, status, sortColumn, sortDirection}) {
     let parsedPage;
     let parsedLimit;
 
@@ -40,8 +40,12 @@ export const TaskService = {
         throw new ValidationError("Status must be either 'todo' or 'done'");
       }
     }
-    console.log("status: ", status)
-    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset, status: status});
+
+    let sortValues = SortHelper.NormalizeAndValidate({column: sortColumn, direction: sortDirection});
+    sortColumn = sortValues['sortColumn'];
+    sortDirection = sortValues['sortDirection'];
+
+    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset, status: status, sort: sortColumn, order: sortDirection});
 
     const result = {
       data: [...allTasks],
