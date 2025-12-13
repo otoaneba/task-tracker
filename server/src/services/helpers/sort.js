@@ -1,9 +1,9 @@
 import { ValidationError } from "../../utils/errors"
 
 export default SortHelper = {
-  validateAndNormalizeSort(column, direction) {
+  NormalizeAndValidate({column, direction}) {
     // Step 0: normalize values. Set missing values (i.e., "", " ", and undefined) to null
-    let sortColumn = column?.trim()?.toUpperCase() || null;
+    let sortColumn = column?.trim() || null;
     let sortDirection = direction?.trim()?.toUpperCase() || null;
 
     // Step 1: Validate if values are given
@@ -21,9 +21,9 @@ export default SortHelper = {
     // Step 2: Run case tree
     // case 1: both are missing
     if (sortColumn === null && sortDirection === null) {
-      sortColumn = mapSortCategory("created_at");
-      sortDirection = mapOrderCategory("DESC");
-      return { sortColumn, sortDirection }
+      sortColumn = this.mapSortCategory("createdAt");
+      sortDirection = this.mapOrderCategory("DESC");
+      return { sortColumn: sortColumn, sortDirection: sortDirection }
     }
 
     // case 2: column is missing but direction (order) was provided
@@ -33,19 +33,19 @@ export default SortHelper = {
 
     // case 3: Sort is not missing, but order is missing (valid and does not depend on content validation)
     if (sortColumn !== null && sortDirection === null) {
-      sortColumn = mapSortCategory(sortColumn);
-      sortDirection = mapOrderCategory("DESC");
-      return { sortColumn, sortDirection };
+      sortColumn = this.mapSortCategory(sortColumn);
+      sortDirection = this.mapOrderCategory("DESC");
+      return { sortColumn: sortColumn, sortDirection: sortDirection }
     }
 
     // case 4: both provided
     if (sortColumn !== null && sortDirection !== null) {
-      sortColumn = mapSortCategory(sortColumn);
-      sortDirection = mapOrderCategory(sortDirection);
-      return { sortColumn, sortDirection };
+      sortColumn = this.mapSortCategory(sortColumn);
+      sortDirection = this.mapOrderCategory(sortDirection);
+      return { sortColumn: sortColumn, sortDirection: sortDirection }
     }
 
-    return { sortColumn, sortDirection};
+    return { sortColumn: sortColumn, sortDirection: sortDirection }
   },
 
   mapSortCategory(name) {
