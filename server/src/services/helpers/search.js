@@ -1,7 +1,7 @@
 import { ValidationError } from "../../utils/errors";
 
 export default SearchHelper = {
-  NormalizeAndValidateSearch({search}) {
+  NormalizeAndValidateSearch(search) {
 
     // null or undefined do not need type validation. We treat them as missing, so return as null.
     if (search == null) {

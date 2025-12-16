@@ -1,10 +1,11 @@
 import { TaskModel } from "../models/taskModel.js";
 import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
 import SortHelper from "./helpers/sort.js";
+import SearchHelper from "./helpers/search.js"
 
 
 export const TaskService = {
-  getTasksForUser: async function({userId, page, limit, status, sortColumn, sortDirection}) {
+  getTasksForUser: async function({userId, page, limit, status, sortColumn, sortDirection, search}) {
     let parsedPage;
     let parsedLimit;
 
@@ -41,11 +42,13 @@ export const TaskService = {
       }
     }
 
-    let sortValues = SortHelper.NormalizeAndValidate({column: sortColumn, direction: sortDirection});
+    const sortValues = SortHelper.NormalizeAndValidate({column: sortColumn, direction: sortDirection});
     sortColumn = sortValues['sortColumn'];
     sortDirection = sortValues['sortDirection'];
 
-    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset, status: status, sort: sortColumn, order: sortDirection});
+    const normalizedSearch = SearchHelper.NormalizeAndValidateSearch(search);
+
+    const allTasks = await TaskModel.findAll({userId: userId, limit: parsedLimit, offset: offset, status: status, sort: sortColumn, order: sortDirection, search: normalizedSearch});
 
     const result = {
       data: [...allTasks],
@@ -109,10 +112,6 @@ export const TaskService = {
     }
 
     const result = await TaskModel.createTask({userId, title, description, imageUrl, status, dueDate});
-
-    if (result == null) {
-      throw new QueryError("Error creating task.", { title })
-    }
 
     return result;
   },
@@ -188,10 +187,6 @@ export const TaskService = {
       status: mergedTasks.status,
       dueDate: mergedTasks.dueDate
     })
-
-    if (result == null) {
-      throw new QueryError("Error updating task.", { taskId });
-    }
 
     return result;
 

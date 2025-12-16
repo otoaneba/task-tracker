@@ -2,7 +2,7 @@ import pool from "../config/db.js";
 import { QueryError } from "../utils/errors.js";
 
 export const TaskModel = {
-  findAll: async function({userId, limit, offset, status, sort, order}) {
+  findAll: async function({userId, limit, offset, status, sort, order, search}) {
     try {
       const sql = `
         SELECT
@@ -19,18 +19,20 @@ export const TaskModel = {
         WHERE user_id = $1
           AND deleted_at IS NULL
           AND ($4::text IS NULL OR status = $4::text)
-        ORDER BY ${sort} ${order}, id ${safeOrder}
+          AND (
+            $5::text IS NULL
+            OR title ILIKE '%' || $5 || '%'
+            OR description ILIKE '%' || $5 || '%'
+          )
+
+        ORDER BY ${sort} ${order}, id ${order}
         LIMIT $2
         OFFSET $3
         `;
         console.log("status in model: ", status)
-      const result = await pool.query(sql, [userId, limit, offset, status]);
+      const result = await pool.query(sql, [userId, limit, offset, status, search]);
 
-      if (result.rows.length === 0) { 
-        return [];
-      }
-
-      return result.rows || null;
+      return result.rows;
     } catch (error) {
       throw new QueryError("Failed to find all tasks", { userId, cause: error });
     }
@@ -44,7 +46,7 @@ export const TaskModel = {
         return null;
       }
 
-      return result.rows[0] || null;
+      return result.rows[0];
     } catch (error) {
       throw new QueryError("Failed to find task by id", {id, userId, cause: error})
     }
@@ -58,7 +60,7 @@ export const TaskModel = {
         return null;
       }
 
-      return result.rows[0] || null;
+      return result.rows[0];
     } catch (error) {
       throw new QueryError("Failed to create task.", {title, description, imageUrl, status, dueDate, cause: error});
     }
@@ -72,7 +74,7 @@ export const TaskModel = {
         return null;
       }
 
-      return result.rows[0] || null;
+      return result.rows[0];
     } catch (error) {
       throw new QueryError("Failed to update task", {id, userId, title, description, imageUrl, status, dueDate, cause: error})
     }
@@ -86,7 +88,7 @@ export const TaskModel = {
         return null;
       }
 
-      return result.rows[0] || null;
+      return result.rows[0];
     } catch (error) {
       throw new QueryError("Failed to delete task", {id, userId, cause: error})
     }

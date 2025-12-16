@@ -50,7 +50,7 @@ export const TaskController = {
   updateTask: async function(req, res, next) {
     try {
       // {taskId, userId, title, description, imageUrl, status, dueDate}
-      const result = await TaskService.updateTask({
+      await TaskService.updateTask({
         userId: req.user.id,
         taskId: req.params.taskId,
         title: req.body?.title,
@@ -69,7 +69,7 @@ export const TaskController = {
   deleteTask: async function(req, res, next) {
     try {
 
-      const result = await TaskService.deleteTask({taskId: req.params.taskId, userId: req.user.id});
+      await TaskService.deleteTask({taskId: req.params.taskId, userId: req.user.id});
 
       return res.status(200).json({"success": true});
 
@@ -78,13 +78,3 @@ export const TaskController = {
     }
   }
 }
-
-
-
-/** 
-  ✔ GET /tasks
-  ✔ GET /tasks/:id
-  ✔ POST /tasks
-  ✔ PATCH /tasks/:id
-  ✔ DELETE /tasks/:id
- */
