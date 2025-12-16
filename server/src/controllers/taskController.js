@@ -10,7 +10,8 @@ export const TaskController = {
         limit: req.query?.limit,
         status: req.query?.status,
         sortColumn: req.query?.sortColumn,
-        sortDirection: req.query?.sortDirection
+        sortDirection: req.query?.sortDirection,
+        search: req.query?.search
       });
 
       return res.status(200).json(result);
