@@ -21,3 +21,13 @@ CREATE TABLE IF NOT EXISTS tasks (
     updated_at TIMESTAMP DEFAULT NOW(),
     deleted_at TIMESTAMP 
 );
+
+-- CREATE ACTIVITY LOGS TABLE
+CREATE TABLE IF NOT EXISTS task_activity_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    task_id UUID NOT NULL,
+    action TEXT NOT NULL CHECK (action IN ('task_created', 'task_updated', 'task_completed', 'task_deleted')),
+    metadata JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
