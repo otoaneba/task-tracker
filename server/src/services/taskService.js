@@ -2,6 +2,7 @@ import { TaskModel } from "../models/taskModel.js";
 import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
 import SortHelper from "./helpers/sort.js";
 import SearchHelper from "./helpers/search.js"
+import { ActivityLogService } from "./activityLogService.js";
 
 
 export const TaskService = {
@@ -113,6 +114,8 @@ export const TaskService = {
 
     const result = await TaskModel.createTask({userId, title, description, imageUrl, status, dueDate});
 
+    await ActivityLogService.createLog({taskId: result.id, userId: userId, action: "task_created"});
+
     return result;
   },
   updateTask: async function({taskId, userId, title, description, imageUrl, status, dueDate}) {
@@ -186,7 +189,11 @@ export const TaskService = {
       imageUrl: mergedTasks.imageUrl,
       status: mergedTasks.status,
       dueDate: mergedTasks.dueDate
-    })
+    });
+
+    if (result === null) {
+      throw new NotFoundError("Task", { id: taskId })
+    }
 
     return result;
 
