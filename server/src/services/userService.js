@@ -28,6 +28,7 @@ export const UserService = {
     const user = await UserModel.createUser({email, passwordHash, username});
 
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    
     return {
       token,
       user: {

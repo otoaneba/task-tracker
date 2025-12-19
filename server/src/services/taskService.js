@@ -1,7 +1,7 @@
 import { TaskModel } from "../models/taskModel.js";
 import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
-import SortHelper from "./helpers/sort.js";
-import SearchHelper from "./helpers/search.js"
+import { SortHelper } from "./helpers/sort.js";
+import { SearchHelper } from "./helpers/search.js"
 import { ActivityLogService } from "./activityLogService.js";
 
 
@@ -43,7 +43,7 @@ export const TaskService = {
       }
     }
 
-    const sortValues = SortHelper.NormalizeAndValidate({column: sortColumn, direction: sortDirection});
+    const sortValues = SortHelper.NormalizeAndValidateSort({column: sortColumn, direction: sortDirection});
     sortColumn = sortValues['sortColumn'];
     sortDirection = sortValues['sortDirection'];
 
@@ -128,9 +128,9 @@ export const TaskService = {
     const mergedTasks = {
       taskId, userId, title: title !== undefined ? title : oldTask.title,
       description: description !== undefined ? description : oldTask.description,
-      imageUrl: imageUrl !== undefined ? imageUrl : oldTask.imageUrl,
+      imageUrl: imageUrl !== undefined ? imageUrl : oldTask.image_url,
       status: status !== undefined ? status : oldTask.status,
-      dueDate: dueDate !== undefined ? dueDate : oldTask.dueDate
+      dueDate: dueDate !== undefined ? dueDate : oldTask.due_date
     };
 
     // validate required fields
@@ -148,7 +148,7 @@ export const TaskService = {
     }
 
     if (dueDate !== undefined) {
-      if (dueDate === null) { // intent action.
+      if (dueDate === null) { // intent action to remove the due date (by setting it to null).
         mergedTasks.dueDate = dueDate;
       } else if (typeof dueDate === "string") {
         const parsedDate = new Date(dueDate);
@@ -166,7 +166,7 @@ export const TaskService = {
       }
     }
 
-    if (mergedTasks.imageUrl !== undefined) {
+    if (mergedTasks.imageUrl != null) {
       try {
         new URL(mergedTasks.imageUrl)
       } catch {
@@ -195,6 +195,29 @@ export const TaskService = {
       throw new NotFoundError("Task", { id: taskId })
     }
 
+    const metadata = { "changedFields": [], "previous": {}};
+    if (title !== undefined) { 
+      metadata.changedFields.push("title");
+      metadata.previous.title = oldTask.title;
+    }
+    if (description !== undefined) {
+      metadata.changedFields.push("description");
+      metadata.previous.description = oldTask.description;
+    }
+    if (imageUrl !== undefined) {
+      metadata.changedFields.push("imageUrl");
+      metadata.previous.imageUrl = oldTask.image_url;
+    }
+    if (status !== undefined) {
+      metadata.changedFields.push("status");
+      metadata.previous.status = oldTask.status;
+    }
+    if (dueDate !== undefined) {
+      metadata.changedFields.push("dueDate");
+      metadata.previous.dueDate = oldTask.due_date;
+    }
+    await ActivityLogService.createLog({taskId: result.id, userId: userId, action: "task_updated", metadata: metadata});
+
     return result;
 
   },
@@ -211,6 +234,8 @@ export const TaskService = {
     if (result === null) {
       throw new NotFoundError("Task", { id: taskId })
     }
+
+    await ActivityLogService.createLog({taskId: result.id, userId: userId, action: "task_deleted"});
 
     return true;
   }

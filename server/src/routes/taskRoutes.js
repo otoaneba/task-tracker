@@ -8,5 +8,3 @@ taskRoutes.get('/:taskId', TaskController.getTaskById);
 taskRoutes.post('/', TaskController.createTask);
 taskRoutes.patch('/:taskId', TaskController.updateTask);
 taskRoutes.delete('/:taskId', TaskController.deleteTask);
-
-taskRoutes.post('/:taskId/activity-logs')

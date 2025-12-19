@@ -1,8 +1,7 @@
-import { ValidationError } from "../../utils/errors"
+import { ValidationError } from "../../utils/errors.js"
 
-export default SortHelper = {
-  // TODO: update name to NormalizeAndValidateSort to be consistent across other helpers
-  NormalizeAndValidate({column, direction}) {
+export const SortHelper = {
+  NormalizeAndValidateSort({column, direction}) {
     // Step 0: normalize values. Set missing values (i.e., "", " ", and undefined) to null
     let sortColumn = column?.trim() || null;
     let sortDirection = direction?.trim()?.toUpperCase() || null;

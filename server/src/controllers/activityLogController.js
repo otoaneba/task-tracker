@@ -1,4 +1,4 @@
-import { ActivityLogService } from "../services/activityLogService"
+import { ActivityLogService } from "../services/activityLogService.js"
 
 export const ActivityLogController = {
   getActivityLog: async function({req, res, err}) {
@@ -14,8 +14,8 @@ export const ActivityLogController = {
       });
 
       res.status(200).json(result);
-    } catch (err) {
-      next(err);
+    } catch (error) {
+      next(error);
     }
-  }
+  },
 }

@@ -1,6 +1,6 @@
-import { ValidationError } from "../../utils/errors";
+import { ValidationError } from "../../utils/errors.js";
 
-export default SearchHelper = {
+export const SearchHelper = {
   NormalizeAndValidateSearch(search) {
 
     // null or undefined do not need type validation. We treat them as missing, so return as null.
