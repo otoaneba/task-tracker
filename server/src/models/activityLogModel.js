@@ -19,7 +19,7 @@ export const ActivityLogModel = {
   findLogsForUser: async function({userId, action, sort, order, limit, offset}) {
     try {
       const sql = `
-        SELECT *
+        SELECT action, metadata, created_at
         FROM task_activity_logs
         WHERE
           user_id = $1
