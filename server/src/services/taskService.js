@@ -1,5 +1,5 @@
 import { TaskModel } from "../models/taskModel.js";
-import { NotFoundError, ValidationError, QueryError } from "../utils/errors.js";
+import { NotFoundError, ValidationError } from "../utils/errors.js";
 import { SortHelper } from "./helpers/sort.js";
 import { SearchHelper } from "./helpers/search.js"
 import { ActivityLogService } from "./activityLogService.js";
