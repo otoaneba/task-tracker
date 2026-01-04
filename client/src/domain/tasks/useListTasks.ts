@@ -1,98 +1,141 @@
 import { useEffect, useState } from 'react'
+import { TaskVM } from './types'
 
-type TaskVM = {
-  id: string
-  title: string
-}
+type DomainError =
+  | { kind: 'network' }
+  | { kind: 'unauthorized' }
+  | { kind: 'unknown'; message?: string }
 
-type DomainError = {
-  message: string
+type TaskListData = {
+  tasks: TaskVM[]
+  page: number
+  limit: number
+  hasMore: boolean
 }
 
 type TaskListState =
   | {
       status: 'loading'
-      tasks: TaskVM[] | null
+      data: TaskListData | null
       selectedSortId: string
       selectedFilterIds: string[]
-      canGoNext: boolean
-      canGoPrevious: boolean
     }
   | {
       status: 'success'
-      tasks: TaskVM[]
+      data: TaskListData
       selectedSortId: string
       selectedFilterIds: string[]
-      canGoNext: boolean
-      canGoPrevious: boolean
     }
   | {
       status: 'error'
-      tasks: TaskVM[] | null
+      data: TaskListData | null
       error: DomainError
       selectedSortId: string
       selectedFilterIds: string[]
-      canGoNext: boolean
-      canGoPrevious: boolean
     }
 
 export function useListTasks() {
   const [state, setState] = useState<TaskListState>({
     status: 'loading',
-    tasks: null,
+    data: null,
     selectedSortId: 'createdDesc',
     selectedFilterIds: [],
-    canGoNext: false,
-    canGoPrevious: false,
   })
 
-  function fetchTasks() {
-    setTimeout(() => {
-      setState(prev => ({
-        status: 'success',
-        tasks: [
-          { id: '1', title: 'Learn frontend architecture' },
-          { id: '2', title: 'Understand domain hooks' },
-        ],
-        selectedSortId: prev.selectedSortId,
-        selectedFilterIds: prev.selectedFilterIds,
-        canGoNext: true,
-        canGoPrevious: false,
-      }))
-    }, 1000)
+  function mockFetchTasks(page: number, limit: number) {
+    return new Promise<{
+      data: TaskVM[]
+      page: number
+      limit: number
+      hasMore: boolean
+    }>((resolve) => {
+      setTimeout(() => {
+        const tasks: TaskVM[] = [
+          {
+            id: '1',
+            title: 'Learn frontend architecture',
+            description: 'Study modern frontend patterns and architecture',
+            isDone: false,
+            dueDateLabel: 'Today',
+            imageUrl: null,
+          },
+          {
+            id: '2',
+            title: 'Understand domain hooks',
+            description: 'Learn how to structure domain-specific hooks',
+            isDone: false,
+            dueDateLabel: null,
+            imageUrl: null,
+          },
+        ]
+  
+        resolve({
+          data: tasks,
+          page,
+          limit,
+          hasMore: tasks.length === limit,
+        })
+      }, 1000)
+    })
   }
 
+  async function loadTasks(page: number) {
+    setState(prev => ({
+      status: 'loading',
+      data: prev.data, // keep stale data if it exists
+      selectedSortId: prev.selectedSortId,
+      selectedFilterIds: prev.selectedFilterIds,
+    }))
+  
+    try {
+      const result = await mockFetchTasks(page, 10)
+  
+      setState(prev => ({
+        status: 'success',
+        data: {
+          tasks: result.data,
+          page: result.page,
+          limit: result.limit,
+          hasMore: result.hasMore,
+        },
+        selectedSortId: prev.selectedSortId,
+        selectedFilterIds: prev.selectedFilterIds,
+      }))
+    } catch {
+      setState(prev => ({
+        status: 'error',
+        data: prev.data,
+        error: { kind: 'unknown' },
+        selectedSortId: prev.selectedSortId,
+        selectedFilterIds: prev.selectedFilterIds,
+      }))
+    }
+  }
+  
+
   useEffect(() => {
-    fetchTasks()
-  }, [])
+    loadTasks(1)
+  }, [state.selectedSortId, state.selectedFilterIds])
 
   const actions = {
     changeSort(sortId: string) {
       setState(prev => ({
-        status: 'loading',
-        tasks: prev.tasks,
+        ...prev,
         selectedSortId: sortId,
-        selectedFilterIds: prev.selectedFilterIds,
-        canGoNext: prev.canGoNext,
-        canGoPrevious: prev.canGoPrevious,
       }))
-
-      fetchTasks()
     },
 
     refresh() {
-      setState(prev => ({
-        status: 'loading',
-        tasks: prev.tasks,
-        selectedSortId: prev.selectedSortId,
-        selectedFilterIds: prev.selectedFilterIds,
-        canGoNext: prev.canGoNext,
-        canGoPrevious: prev.canGoPrevious,
-      }))
-
-      fetchTasks()
+      setState(prev => {
+        const page = prev.data?.page ?? 1
+        loadTasks(page)
+        return prev
+      })
     },
   }
 
-  return { state, actions }
+  const canGoNext = state.status === 'success' && state.data.hasMore
+  const canGoPrevious = state.status === 'success' && state.data.page > 1
+
+  return { state, actions, canGoNext, canGoPrevious }
 }
