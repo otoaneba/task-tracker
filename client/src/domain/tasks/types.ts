@@ -3,6 +3,6 @@ export type TaskVM = {
   title: string
   description: string
   isDone: boolean
-  dueDateLabel: string
-  imageUrl?: string
+  dueDateLabel: string | null
+  imageUrl: string | null
 }

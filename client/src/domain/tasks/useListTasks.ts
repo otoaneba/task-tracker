@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TaskVM } from './types'
+import { fetchTasks } from '../../api/tasks'
+import { mapTaskDtoToVM } from './mappers'
 
 type DomainError =
   | { kind: 'network' }
@@ -42,42 +44,6 @@ export function useListTasks() {
     selectedFilterIds: [],
   })
 
-  function mockFetchTasks(page: number, limit: number) {
-    return new Promise<{
-      data: TaskVM[]
-      page: number
-      limit: number
-      hasMore: boolean
-    }>((resolve) => {
-      setTimeout(() => {
-        const tasks: TaskVM[] = [
-          {
-            id: '1',
-            title: 'Learn frontend architecture',
-            description: 'Study modern frontend patterns and architecture',
-            isDone: false,
-            dueDateLabel: 'Today',
-            imageUrl: null,
-          },
-          {
-            id: '2',
-            title: 'Understand domain hooks',
-            description: 'Learn how to structure domain-specific hooks',
-            isDone: false,
-            dueDateLabel: null,
-            imageUrl: null,
-          },
-        ]
-  
-        resolve({
-          data: tasks,
-          page,
-          limit,
-          hasMore: tasks.length === limit,
-        })
-      }, 1000)
-    })
-  }
 
   async function loadTasks(page: number) {
     setState(prev => ({
@@ -88,12 +54,19 @@ export function useListTasks() {
     }))
   
     try {
-      const result = await mockFetchTasks(page, 10)
+      const result = await fetchTasks({
+        page,
+        limit: 10,
+        sortId: state.selectedSortId,
+        filterIds: state.selectedFilterIds,
+      })
+  
+      const tasks = result.data.map(mapTaskDtoToVM)
   
       setState(prev => ({
         status: 'success',
         data: {
-          tasks: result.data,
+          tasks,
           page: result.page,
           limit: result.limit,
           hasMore: result.hasMore,
@@ -101,11 +74,21 @@ export function useListTasks() {
         selectedSortId: prev.selectedSortId,
         selectedFilterIds: prev.selectedFilterIds,
       }))
-    } catch {
+    } catch (err: any) {
+      let domainError: DomainError
+    
+      if (err.status === 401) {
+        domainError = { kind: 'unauthorized' }
+      } else if (!navigator.onLine) {
+        domainError = { kind: 'network' }
+      } else {
+        domainError = { kind: 'unknown' }
+      }
+    
       setState(prev => ({
         status: 'error',
         data: prev.data,
-        error: { kind: 'unknown' },
+        error: domainError,
         selectedSortId: prev.selectedSortId,
         selectedFilterIds: prev.selectedFilterIds,
       }))
@@ -132,6 +115,34 @@ export function useListTasks() {
         return prev
       })
     },
+
+    goNext() {
+      if (!canGoNext) return
+      loadTasks(state.data!.page + 1)
+    },
+    
+    goPrevious() {
+      if (!canGoPrevious) return
+      loadTasks(state.data!.page - 1)
+    },
+     applyTaskToggle(taskId: string, nextState: boolean) {
+      setState(prev => {
+        if (prev.status !== 'success') return prev
+    
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            tasks: prev.data.tasks.map(task =>
+              task.id === taskId
+                ? { ...task, isDone: nextState }
+                : task
+            ),
+          },
+        }
+      })
+    }
+    
   }
 
   const canGoNext = state.status === 'success' && state.data.hasMore

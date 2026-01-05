@@ -1,43 +1,29 @@
 import React from 'react'
+import { useToggleTask } from '@/domain/tasks/useToggleTask'
+import { TaskVM } from '../domain/tasks/types'
 
 type TaskItemProps = {
-  taskId: string
-  title: string
-  isDone: boolean
-  dueDateLabel?: string | null
+  task: TaskVM
 
   onToggleComplete: (taskId: string, nextState: boolean) => void
   onSelect: (taskId: string) => void
   onDelete: (taskId: string) => void
 }
 
-export function TaskItem(props: TaskItemProps) {
-  const {
-    taskId,
-    title,
-    isDone,
-    dueDateLabel,
-    onToggleComplete,
-    onSelect,
-    onDelete,
-  } = props
+export function TaskItem({task, onToggleComplete, onSelect, onDelete }: TaskItemProps) {
+  const { state, toggle, reset } = useToggleTask(() => {
+    onToggleComplete(task.id, !task.isDone)
+    reset()
+  })
 
   function handleToggleComplete() {
-    onToggleComplete(taskId, !isDone)
-  }
-
-  function handleSelect() {
-    onSelect(taskId)
-  }
-
-  function handleDelete() {
-    onDelete(taskId)
+    toggle(task.id, !task.isDone)
   }
 
   return (
     <div
       role="listitem"
-      onClick={handleSelect}
+      onClick={() => onSelect(task.id)}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -47,26 +33,41 @@ export function TaskItem(props: TaskItemProps) {
         cursor: 'pointer',
       }}
     >
-      <input
-        type="checkbox"
-        checked={isDone}
-        onChange={handleToggleComplete}
-        onClick={e => e.stopPropagation()}
-      />
+
+    <input
+      type="checkbox"
+      checked={task.isDone}
+      disabled={state.status === 'loading'}
+      onChange={handleToggleComplete}
+      onClick={e => e.stopPropagation()}
+    />
+    
+    {state.status === 'error' && (
+      <div style={{ color: 'red', fontSize: '0.8em' }}>
+        Failed to update. Try again.
+      </div>
+    )}
+
 
       <div style={{ flex: 1 }}>
         <div
           style={{
-            textDecoration: isDone ? 'line-through' : 'none',
+            textDecoration: task.isDone ? 'line-through' : 'none',
             fontWeight: 500,
           }}
         >
-          {title}
+          {task.title}
         </div>
 
-        {dueDateLabel && (
+        {task.dueDateLabel && (
           <div style={{ fontSize: '0.85em', color: '#666' }}>
-            {dueDateLabel}
+            {task.dueDateLabel}
+          </div>
+        )}
+
+        {state.status === 'error' && (
+          <div style={{ color: 'red', fontSize: '0.8em' }}>
+            Failed to update. Try again.
           </div>
         )}
       </div>
@@ -74,7 +75,7 @@ export function TaskItem(props: TaskItemProps) {
       <button
         onClick={e => {
           e.stopPropagation()
-          handleDelete()
+          onDelete(task.id)
         }}
       >
         Delete
